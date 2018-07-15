@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 class Course:
 	def __init__(self):
 		self.name = ''
@@ -83,21 +86,64 @@ def getCRUntil(sem):
 			num += c.grade*c.credits
 			den += c.credits
 	cr = num/den/10
-	return cr		
+	return cr
 
-def main():
-	global courses
-	courses += parseFromFile('grades.txt')
-	addNewCourse('MC878', 4, 9.0, '2S2016')
+
+def getSemCR(sem):
+	num = 0.0
+	den = 0
+	pr = int(sem[0])
+	year = int(sem[2:])
+	for c in courses:
+		cpr = int(c.sem[0])
+		cyear = int(c.sem[2:])
+		if cyear == year and cpr == pr:
+			num += c.grade*c.credits
+			den += c.credits
+	cr = num/den/10
+	return cr
+
+
+def plot_charts():
 	year = 2012
 	pr = 1
-	while year < 2017:
+
+	labels = []
+	acc = []
+	partial = []
+
+	ignored = {'2S2015', '1S2016', '2S2018'}
+
+	while year <= 2018:
 		sem = str(pr) + 'S' + str(year)
-		print(sem + ': ' + str(getCRUntil(sem)))
+		if sem not in ignored:
+			cacc = getCRUntil(sem)
+			cpartial = getSemCR(sem)
+			print('%s: %.4f' % (sem, cacc))
+			labels.append(sem)
+			acc.append(cacc)
+			partial.append(cpartial)
 		pr += 1
 		if pr == 3:
 			pr = 1
 			year += 1
+
+
+	print(acc)
+	print(partial)
+	plt.plot(labels, acc)
+	plt.plot(labels, partial)
+	plt.legend(('Accumulated', 'Partial'))
+	plt.xlabel('Semester')
+	plt.ylabel('CR')
+	plt.title('CR evolution')
+	plt.show()
+
+def main():
+	global courses
+	courses += parseFromFile('grades.txt')
+	plot_charts()
+
 
 if __name__ == "__main__":
     main()
